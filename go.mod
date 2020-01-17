@@ -1,4 +1,4 @@
-module github.com/theoden9014/evbundler
+module github.com/go-loadtest/evbundler
 
 go 1.13
 

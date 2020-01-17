@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/theoden9014/evbundler/event"
+	"github.com/go-loadtest/evbundler/event"
 	"golang.org/x/time/rate"
 )
 

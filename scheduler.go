@@ -3,7 +3,7 @@ package evbundler
 import (
 	"sync"
 
-	"github.com/theoden9014/evbundler/event"
+	"github.com/go-loadtest/evbundler/event"
 )
 
 type RoundRobin struct {

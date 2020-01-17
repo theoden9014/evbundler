@@ -3,7 +3,7 @@ package evbundler
 import (
 	"context"
 
-	"github.com/theoden9014/evbundler/event"
+	"github.com/go-loadtest/evbundler/event"
 )
 
 type EventBundler interface {
