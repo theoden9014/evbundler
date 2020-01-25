@@ -31,14 +31,14 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 	// start listening for icmp replies
 	c, err := icmp.ListenPacket("ip4:icmp", e.listenAddr)
 	if err != nil {
-		return err
+		return fmt.Errorf("can not listen address (%s): %w", e.listenAddr, err)
 	}
 	defer c.Close()
 
 	// resolve any DNS
 	dst, err := net.ResolveIPAddr("ip4", e.addr)
 	if err != nil {
-		return err
+		return fmt.Errorf("can not resolve DNS (%s): %w", e.addr, err)
 	}
 
 	// make icmp packet
@@ -57,7 +57,7 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 
 	// send a icmp packet
 	if _, err := c.WriteTo(b, dst); err != nil {
-		return err
+		return fmt.Errorf("failed to send icmp packet: %w", err)
 	}
 
 	// wait for a reply icmp packet
@@ -74,7 +74,7 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 	// check a replay icmp packet
 	rm, err := icmp.ParseMessage(1, reply[:n])
 	if err != nil {
-		return err
+		return fmt.Errof("invalid ICMP message: %w", err)
 	}
 
 	switch rm.Type {
