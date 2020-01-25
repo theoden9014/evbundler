@@ -74,7 +74,7 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 	// check a replay icmp packet
 	rm, err := icmp.ParseMessage(1, reply[:n])
 	if err != nil {
-		return fmt.Errof("invalid ICMP message: %w", err)
+		return fmt.Errorf("invalid ICMP message: %w", err)
 	}
 
 	switch rm.Type {
