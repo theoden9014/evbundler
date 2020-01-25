@@ -9,7 +9,6 @@ import (
 
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
-	"golang.org/x/net/ipv6"
 )
 
 // not work on
@@ -29,7 +28,7 @@ func (e ICMPv4Event) Name() string {
 
 func (e ICMPv4Event) Fire(ctx context.Context) error {
 	// start listening for icmp replies
-	c, err := icmp.ListenPacket("ip4:icmp", e.listenAddr)
+	c, err := net.ListenPacket("ip4:icmp", e.listenAddr)
 	if err != nil {
 		return fmt.Errorf("can not listen address (%s): %w", e.listenAddr, err)
 	}
@@ -57,7 +56,7 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 
 	// send a icmp packet
 	if _, err := c.WriteTo(b, dst); err != nil {
-		return fmt.Errorf("failed to send icmp packet: %w", err)
+		return fmt.Errorf("failed to send a ICMP packet: %w", err)
 	}
 
 	// wait for a reply icmp packet
@@ -68,7 +67,7 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 	}
 	n, peer, err := c.ReadFrom(reply)
 	if err != nil {
-		return err
+		return fmt.Errorf("can not recieve a reply ICMP packet: %w", err)
 	}
 
 	// check a replay icmp packet
@@ -78,7 +77,7 @@ func (e ICMPv4Event) Fire(ctx context.Context) error {
 	}
 
 	switch rm.Type {
-	case ipv6.ICMPTypeEchoReply:
+	case ipv4.ICMPTypeEchoReply:
 		return nil
 	default:
 		return fmt.Errorf("got %+v from %v; want echo reply", rm, peer)
