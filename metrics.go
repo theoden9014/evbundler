@@ -2,211 +2,145 @@ package evbundler
 
 import (
 	"encoding/json"
+	"time"
+
+	"github.com/influxdata/tdigest"
 )
 
-type Metrics interface {
-	ExportMetrics() interface{}
-	json.Marshaler
+type Metrics struct {
+	Latencies LatencyMetrics `json:"latencies"`
+	Earliest  time.Time      `json:"-"`
+	Latest    time.Time      `json:"-"`
+	End       time.Time      `json:"-"`
+
+	Events  uint64            `json:"events"`
+	Success uint64            `json:"success"`
+	Failed  uint64            `json:"failed"`
+	Errors  map[string]uint64 `json:"errors"`
+
+	Rate       float64       `json:"rate"`
+	Throughput float64       `json:"throughput"`
+	Duration   time.Duration `json:"duration"`
 }
 
-type MetricsGroup map[string]Metrics
+func (m *Metrics) Add(r *Result) {
+	m.init()
 
-func (mg *MetricsGroup) Register(m Metrics) {
+	m.Latencies.Add(r.Latency)
+	m.Events += uint64(r.Weight)
 
+	if m.Earliest.IsZero() || m.Earliest.After(r.Timestamp) {
+		m.Earliest = r.Timestamp
+	}
+
+	if r.Timestamp.After(m.Latest) {
+		m.Latest = r.Timestamp
+	}
+
+	if end := r.End(); end.After(m.End) {
+		m.End = end
+	}
+
+	if r.Error != nil {
+		m.Failed += uint64(r.Weight)
+		err := r.Error.Error()
+		m.Errors[err]++
+	} else {
+		m.Success += uint64(r.Weight)
+	}
 }
 
-// type Metrics struct {
-// 	Latencies LatencyMetrics `json:"latencies"`
-// 	Earliest  time.Time      `json:"-"`
-// 	Latest    time.Time      `json:"-"`
-// 	End       time.Time      `json:"-"`
+func (m *Metrics) Export() Metrics {
+	m2 := *m
+	m2.init()
 
-// 	Events       uint64            `json:"events"`
-// 	Success      uint64            `json:"success"`
-// 	Failed       uint64            `json:"failed"`
-// 	Errors       map[string]uint64 `json:"errors"`
-// 	WorkerErrors map[string]uint64 `json:"worker_errors"`
+	m2.Rate = float64(m2.Events)
+	m2.Throughput = float64(m2.Success)
+	m2.Duration = m2.Latest.Sub(m2.Earliest)
 
-// 	WorkerPool
-// 	Workers        uint64        `json:"workers"`
-// 	WaitingWorkers uint64        `json:"waiting_workers"`
-// 	ProcessWrokers uint64        `json:"process_workers"`
-// 	Rate           float64       `json:"rate"`
-// 	Throughput     float64       `json:"throughput"`
-// 	Duration       time.Duration `json:"duration"`
-// }
+	if mins := m2.Duration.Minutes(); mins > 0 {
+		m2.Rate /= mins
+		m2.Throughput /= mins
+	}
 
-// func (m *Metrics) SetWorkers(n uint64) {
-// 	m.Workers = n
-// }
+	m2.Latencies.Mean = time.Duration(float64(m2.Latencies.Total) / float64(m2.Events))
+	m2.Latencies.P50 = m.Latencies.Quantile(0.50)
+	m2.Latencies.P90 = m.Latencies.Quantile(0.90)
+	m2.Latencies.P95 = m.Latencies.Quantile(0.95)
+	m2.Latencies.P99 = m.Latencies.Quantile(0.99)
 
-// func (m *Metrics) SetWaitingWorkers(n uint64) {
-// 	m.WaitingWorkers = n
-// }
+	return m2
+}
 
-// func (m *Metrics) SetProcessWorkers(n uint64) {
-// 	m.ProcessWrokers = n
-// }
+func (m *Metrics) init() {
+	if m.Errors == nil {
+		m.Errors = make(map[string]uint64)
+	}
+}
 
-// func (m *Metrics) Add(r *Result) {
-// 	m.init()
+type LatencyMetrics struct {
+	Total time.Duration
+	Mean  time.Duration
+	P50   time.Duration
+	P90   time.Duration
+	P95   time.Duration
+	P99   time.Duration
+	Max   time.Duration
 
-// 	m.Latencies.Add(r.Latency)
-// 	m.Events += r.Weight
+	estimator estimator
+}
 
-// 	if m.Earliest.IsZero() || m.Earliest.After(r.Timestamp) {
-// 		m.Earliest = r.Timestamp
-// 	}
+func (l *LatencyMetrics) Add(latency time.Duration) {
+	l.init()
+	if l.Total += latency; latency > l.Max {
+		l.Max = latency
+	}
+	l.estimator.Add(float64(latency))
+}
 
-// 	if r.Timestamp.After(m.Latest) {
-// 		m.Latest = r.Timestamp
-// 	}
+func (l LatencyMetrics) Quantile(nth float64) time.Duration {
+	l.init()
+	return time.Duration(l.estimator.Get(nth))
+}
 
-// 	if end := r.End(); end.After(m.End) {
-// 		m.End = end
-// 	}
+func (l *LatencyMetrics) init() {
+	if l.estimator == nil {
+		l.estimator = newTdigestEstimator(100)
+	}
+}
 
-// 	if r.Error != nil {
-// 		m.Failed += r.Weight
-// 		err := r.Error.Error()
-// 		m.Errors[err]++
-// 		m.WorkerErrors[r.WorkerID]++
-// 	} else {
-// 		m.Success += r.Weight
-// 	}
-// }
+func (l *LatencyMetrics) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Total string `json:"-"`
+		Mean  string `json:"mean"`
+		P50   string `json:"50th"`
+		P90   string `json:"90th"`
+		P95   string `json:"95th"`
+		P99   string `json:"99th"`
+		Max   string `json:"max"`
+	}{
+		Total: l.Total.String(),
+		Mean:  l.Mean.String(),
+		P50:   l.P50.String(),
+		P90:   l.P90.String(),
+		P95:   l.P95.String(),
+		P99:   l.P99.String(),
+		Max:   l.Max.String(),
+	})
+}
 
-// func (m *Metrics) Export() Metrics {
-// 	m2 := *m
-// 	m2.init()
+type estimator interface {
+	Add(sample float64)
+	Get(quantile float64) float64
+}
 
-// 	m2.Rate = float64(m2.Events)
-// 	m2.Throughput = float64(m2.Success)
-// 	m2.Duration = m2.Latest.Sub(m2.Earliest)
+type tdigestEstimator struct{ *tdigest.TDigest }
 
-// 	if mins := m2.Duration.Minutes(); mins > 0 {
-// 		m2.Rate /= mins
-// 		m2.Throughput /= mins
-// 	}
+func newTdigestEstimator(compression float64) *tdigestEstimator {
+	return &tdigestEstimator{TDigest: tdigest.NewWithCompression(compression)}
+}
 
-// 	m2.Latencies.Mean = time.Duration(float64(m2.Latencies.Total) / float64(m2.Events))
-// 	m2.Latencies.P50 = m.Latencies.Quantile(0.50)
-// 	m2.Latencies.P90 = m.Latencies.Quantile(0.90)
-// 	m2.Latencies.P95 = m.Latencies.Quantile(0.95)
-// 	m2.Latencies.P99 = m.Latencies.Quantile(0.99)
-
-// 	return m2
-// }
-
-// func (m *Metrics) init() {
-// 	if m.Errors == nil {
-// 		m.Errors = make(map[string]uint64)
-// 	}
-
-// 	if m.WorkerErrors == nil {
-// 		m.WorkerErrors = make(map[string]uint64)
-// 	}
-// }
-
-// func (m *Metrics) MarshalJSON() ([]byte, error) {
-// 	return json.Marshal(&struct {
-// 		Latencies LatencyMetrics `json:"latencies"`
-// 		Earliest  string         `json:"earliest"`
-// 		Latest    string         `json:"latest"`
-// 		End       string         `json:"end"`
-
-// 		Events         uint64            `json:"events"`
-// 		Success        uint64            `json:"success"`
-// 		Failed         uint64            `json:"failed"`
-// 		Errors         map[string]uint64 `json:"errors"`
-// 		Workers        uint64            `json:"workers"`
-// 		WaitingWorkers uint64            `json:"waiting_workers"`
-// 		ProcessWorkers uint64            `json:"process_workers"`
-
-// 		Rate       int `json:"rate"`
-// 		Throughput int `json:"throughput"`
-// 	}{
-// 		Latencies: m.Latencies,
-// 		Earliest:  m.Earliest.String(),
-// 		Latest:    m.Latest.String(),
-// 		End:       m.End.String(),
-
-// 		Events:         m.Events,
-// 		Success:        m.Success,
-// 		Failed:         m.Failed,
-// 		Errors:         m.Errors,
-// 		Workers:        m.Workers,
-// 		WaitingWorkers: m.WaitingWorkers,
-// 		ProcessWorkers: m.ProcessWrokers,
-
-// 		Rate:       int(m.Rate),
-// 		Throughput: int(m.Throughput),
-// 	})
-// }
-
-// type LatencyMetrics struct {
-// 	Total time.Duration `json:"total"`
-// 	Mean  time.Duration `json:"mean"`
-// 	P50   time.Duration `json:"50th"`
-// 	P90   time.Duration `json:"90th"`
-// 	P95   time.Duration `json:"95th"`
-// 	P99   time.Duration `json:"99th"`
-// 	Max   time.Duration `json:"max"`
-
-// 	estimator estimator
-// }
-
-// func (l *LatencyMetrics) Add(latency time.Duration) {
-// 	l.init()
-// 	if l.Total += latency; latency > l.Max {
-// 		l.Max = latency
-// 	}
-// 	l.estimator.Add(float64(latency))
-// }
-
-// func (l LatencyMetrics) Quantile(nth float64) time.Duration {
-// 	l.init()
-// 	return time.Duration(l.estimator.Get(nth))
-// }
-
-// func (l *LatencyMetrics) init() {
-// 	if l.estimator == nil {
-// 		l.estimator = newTdigestEstimator(100)
-// 	}
-// }
-
-// func (l *LatencyMetrics) MarshalJSON() ([]byte, error) {
-// 	return json.Marshal(&struct {
-// 		Total string `json:"total"`
-// 		Mean  string `json:"mean"`
-// 		P50   string `json:"50th"`
-// 		P90   string `json:"90th"`
-// 		P95   string `json:"95th"`
-// 		P99   string `json:"99th"`
-// 		Max   string `json:"max"`
-// 	}{
-// 		Total: l.Total.String(),
-// 		Mean:  l.Mean.String(),
-// 		P50:   l.P50.String(),
-// 		P90:   l.P90.String(),
-// 		P95:   l.P95.String(),
-// 		P99:   l.P99.String(),
-// 		Max:   l.Max.String(),
-// 	})
-// }
-
-// type estimator interface {
-// 	Add(sample float64)
-// 	Get(quantile float64) float64
-// }
-
-// type tdigestEstimator struct{ *tdigest.TDigest }
-
-// func newTdigestEstimator(compression float64) *tdigestEstimator {
-// 	return &tdigestEstimator{TDigest: tdigest.NewWithCompression(compression)}
-// }
-
-// func (e *tdigestEstimator) Add(s float64) { e.TDigest.Add(s, 1) }
-// func (e *tdigestEstimator) Get(q float64) float64 {
-// 	return e.TDigest.Quantile(q)
-// }
+func (e *tdigestEstimator) Add(s float64) { e.TDigest.Add(s, 1) }
+func (e *tdigestEstimator) Get(q float64) float64 {
+	return e.TDigest.Quantile(q)
+}
