@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/go-loadtest/evbundler"
-	"github.com/go-loadtest/evbundler/event"
 )
 
 // ChannelDispatcher dispatcher by go channel.
@@ -28,12 +27,12 @@ func NewChannelDispatcher(pool evbundler.WorkerPool) *ChannelDispatcher {
 }
 
 // Dispatch dispatches events from a event channel.
-func (d *ChannelDispatcher) Dispatch(ctx context.Context, evCh chan event.Event) error {
+func (d *ChannelDispatcher) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
 	go d.receiveResult(ctx)
 	return d.dispatch(ctx, evCh)
 }
 
-func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan event.Event) error {
+func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan evbundler.Event) error {
 	if d.pool.Len() == 0 {
 		return errors.New("count of workers > 0 in worker pool")
 	}
@@ -54,7 +53,7 @@ func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan event.Event)
 	return ctx.Err()
 }
 
-func (d *ChannelDispatcher) serveWorker(ctx context.Context, w evbundler.Worker, evCh chan event.Event) {
+func (d *ChannelDispatcher) serveWorker(ctx context.Context, w evbundler.Worker, evCh chan evbundler.Event) {
 	defer w.Close()
 	for {
 		select {

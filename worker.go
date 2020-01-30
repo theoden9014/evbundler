@@ -5,19 +5,17 @@ import (
 	"fmt"
 	"runtime/trace"
 	"time"
-
-	"github.com/go-loadtest/evbundler/event"
 )
 
 type Worker interface {
-	Process(context.Context, event.Event) *Result
+	Process(context.Context, Event) *Result
 	Close() error
 	// StateTransaction(<-chan WorkerState)
 }
 
-type WorkerFunc func(context.Context, event.Event) error
+type WorkerFunc func(context.Context, Event) error
 
-func defaultWorkerFunc(ctx context.Context, ev event.Event) error {
+func defaultWorkerFunc(ctx context.Context, ev Event) error {
 	return ev.Fire(ctx)
 }
 
@@ -26,7 +24,7 @@ type worker struct {
 	f     WorkerFunc
 }
 
-func (w *worker) Process(ctx context.Context, ev event.Event) *Result {
+func (w *worker) Process(ctx context.Context, ev Event) *Result {
 	w.setState(StateProcess)
 	defer w.setState(StateActive)
 	defer trace.StartRegion(ctx, fmt.Sprintf("process event: %q", ev.Name())).End()
