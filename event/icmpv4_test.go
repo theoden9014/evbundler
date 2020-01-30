@@ -10,7 +10,7 @@ import (
 	"github.com/go-loadtest/evbundler/event"
 )
 
-func TestICMPv4(t *testing.T) {
+func TestICMPv4_Fire(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
