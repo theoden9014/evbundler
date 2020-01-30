@@ -10,8 +10,18 @@ type WorkerPool interface {
 	Len() int
 }
 
-func NewWorkerPool() *workerPool {
-	return &workerPool{}
+func NewWorkerPool(n int, f WorkerFunc) *workerPool {
+	wp := &workerPool{}
+	if f == nil {
+		f = defaultWorkerFunc
+	}
+
+	for i := 0; i < n; i++ {
+		w := &worker{f: f}
+		wp.Put(w)
+	}
+
+	return wp
 }
 
 type workerPool struct {
@@ -35,8 +45,8 @@ func (wp *workerPool) Get() Worker {
 	return w
 }
 
-// Push restore a Worker into pool.
-func (wp *workerPool) Push(w Worker) {
+// Put store a Worker into pool.
+func (wp *workerPool) Put(w Worker) {
 	wp.mu.Lock()
 	defer wp.mu.Unlock()
 
