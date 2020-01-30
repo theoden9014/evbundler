@@ -9,5 +9,4 @@ import (
 
 type Dispatcher interface {
 	Dispatch(context.Context, chan event.Event) error
-	Export() evbundler.Metrics
 }
