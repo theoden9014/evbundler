@@ -41,6 +41,7 @@ func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan event.Event)
 	var wg sync.WaitGroup
 	for w := d.pool.Get(); w != nil; w = d.pool.Get() {
 		w := w
+		wg.Add(1)
 		go d.serveWorker(ctx, &wg, w, evCh)
 	}
 
