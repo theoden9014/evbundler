@@ -9,6 +9,7 @@ import (
 	"net/url"
 )
 
+// HTTPClient is an abstraction of sending an HTTP request
 var HTTPClient httpClient = http.DefaultClient
 
 type httpClient interface {
@@ -22,10 +23,12 @@ type HTTPEvent struct {
 	Body   io.Reader
 }
 
+// Name is Event name each event types
 func (he HTTPEvent) Name() string {
 	return "HTTP"
 }
 
+// Fire execute a Event by parameters
 func (he HTTPEvent) Fire(ctx context.Context) error {
 	u, err := he.URL.Parse(he.Path)
 	if err != nil {
@@ -44,7 +47,7 @@ func (he HTTPEvent) Fire(ctx context.Context) error {
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return errors.New("unsuccessful response code.")
+		return errors.New("unsuccessful response code")
 	}
 
 	return nil
