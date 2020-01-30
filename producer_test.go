@@ -16,12 +16,12 @@ type errEvent struct {
 func (f errEvent) Name() string                   { return "err" }
 func (f errEvent) Fire(ctx context.Context) error { return f.err }
 
-func TestTickerEventGenerator(t *testing.T) {
+func TestTickerProducer(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Millisecond)
 	defer cancel()
 
 	var fooErr = errors.New("foo")
-	evch := evbundler.TickerTrigger(ctx, 1*time.Millisecond, func(t time.Time, evch chan evbundler.Event) {
+	evch := evbundler.TickerProducer(ctx, 1*time.Millisecond, func(t time.Time, evch chan evbundler.Event) {
 		evch <- &errEvent{err: fooErr}
 	})
 
