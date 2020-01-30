@@ -1,4 +1,4 @@
-package event_test
+package evbundler_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-loadtest/evbundler/event"
+	"github.com/go-loadtest/evbundler"
 )
 
 type errEvent struct {
@@ -21,7 +21,7 @@ func TestTickerEventGenerator(t *testing.T) {
 	defer cancel()
 
 	var fooErr = errors.New("foo")
-	evch := event.TickerTrigger(ctx, 1*time.Millisecond, func(t time.Time, evch chan event.Event) {
+	evch := evbundler.TickerTrigger(ctx, 1*time.Millisecond, func(t time.Time, evch chan evbundler.Event) {
 		evch <- &errEvent{err: fooErr}
 	})
 

@@ -3,30 +3,37 @@ package evbundler
 import (
 	"context"
 	"sync"
-
-	"github.com/go-loadtest/evbundler/event"
 )
+
+type Dispatcher interface {
+	Dispatch(context.Context, chan Event) error
+}
+
+type Event interface {
+	Name() string
+	Fire(ctx context.Context) error
+}
 
 // EventBundler put several receive channels to gather into one.
 type EventBundler struct {
 	mu     sync.RWMutex
-	inputs []<-chan event.Event
-	output chan event.Event
+	inputs []<-chan Event
+	output chan Event
 }
 
 // In register a receive channel.
-func (ep *EventBundler) In(ev chan event.Event) {
+func (ep *EventBundler) In(ev chan Event) {
 	ep.mu.Lock()
 	defer ep.mu.Unlock()
 	ep.inputs = append(ep.inputs, ev)
 }
 
 // Out returns the bundled channels
-func (ep *EventBundler) Out() <-chan event.Event {
+func (ep *EventBundler) Out() <-chan Event {
 	ep.mu.Lock()
 	defer ep.mu.Unlock()
 	if ep.output == nil {
-		ep.output = make(chan event.Event, len(ep.inputs))
+		ep.output = make(chan Event, len(ep.inputs))
 	}
 	return ep.output
 }
@@ -36,7 +43,7 @@ func (ep *EventBundler) Out() <-chan event.Event {
 func (ep *EventBundler) Start(ctx context.Context) {
 	for _, evc := range ep.inputs {
 		evc := evc
-		go func(evc <-chan event.Event) {
+		go func(evc <-chan Event) {
 			for {
 				select {
 				case ev := <-evc:

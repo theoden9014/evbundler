@@ -5,7 +5,6 @@ import (
 	"runtime/trace"
 
 	"github.com/go-loadtest/evbundler"
-	"github.com/go-loadtest/evbundler/event"
 )
 
 type RoundRobinDispatcher struct {
@@ -14,7 +13,7 @@ type RoundRobinDispatcher struct {
 	metrics  *evbundler.Metrics
 }
 
-func (d *RoundRobinDispatcher) Dispatch(ctx context.Context, evCh chan event.Event) error {
+func (d *RoundRobinDispatcher) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
 	for {
 		select {
 		case ev := <-evCh:
@@ -25,7 +24,7 @@ func (d *RoundRobinDispatcher) Dispatch(ctx context.Context, evCh chan event.Eve
 	}
 }
 
-func (d *RoundRobinDispatcher) dispatch(ctx context.Context, ev event.Event) error {
+func (d *RoundRobinDispatcher) dispatch(ctx context.Context, ev evbundler.Event) error {
 	w := d.pool.Get()
 	defer d.pool.Put(w)
 
