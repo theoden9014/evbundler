@@ -14,10 +14,11 @@ type RoundRobinDispatcher struct {
 }
 
 func (d *RoundRobinDispatcher) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
+	go d.receiveResult(ctx)
 	for {
 		select {
 		case ev := <-evCh:
-			go d.dispatch(ctx, ev)
+			go func() { _ = d.dispatch(ctx, ev) }()
 		case <-ctx.Done():
 			return ctx.Err()
 		}
@@ -42,4 +43,15 @@ func (d *RoundRobinDispatcher) dispatch(ctx context.Context, ev evbundler.Event)
 	region.End()
 
 	return nil
+}
+
+func (d *RoundRobinDispatcher) receiveResult(ctx context.Context) {
+	for {
+		select {
+		case r := <-d.resultCh:
+			d.metrics.Add(r)
+		case <-ctx.Done():
+			return
+		}
+	}
 }
