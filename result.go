@@ -3,7 +3,7 @@ package evbundler
 import "time"
 
 type Result struct {
-	WorkerID  string        `json:"worker_id"`
+	EventName string        `json:"event_name"`
 	Weight    int           `json:"weight"`
 	Error     error         `json:"error"`
 	Latency   time.Duration `json:"latency"`
