@@ -68,9 +68,7 @@ func ExampleHTTPEvent() {
 
 	wp := evbundler.NewWorkerPool(10, nil)
 	disp := dispatcher.NewChannelDispatcher(wp)
-	if err := disp.Dispatch(ctx, evCh); err != nil {
-		log.Fatal(err)
-	}
+	disp.Dispatch(ctx, evCh)
 
 	// Output: receive 100 requests
 }
