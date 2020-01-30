@@ -42,7 +42,10 @@ func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan event.Event)
 	for w := d.pool.Get(); w != nil; w = d.pool.Get() {
 		w := w
 		wg.Add(1)
-		go d.serveWorker(ctx, &wg, w, evCh)
+		go func() {
+			defer wg.Done()
+			d.serveWorker(ctx, w, evCh)
+		}()
 	}
 
 	select {
@@ -53,9 +56,8 @@ func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan event.Event)
 	}
 }
 
-func (d *ChannelDispatcher) serveWorker(ctx context.Context, wg *sync.WaitGroup, w evbundler.Worker, evCh chan event.Event) {
+func (d *ChannelDispatcher) serveWorker(ctx context.Context, w evbundler.Worker, evCh chan event.Event) {
 	defer w.Close()
-	defer wg.Done()
 	for {
 		select {
 		case ev := <-evCh:
