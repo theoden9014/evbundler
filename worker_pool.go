@@ -10,6 +10,10 @@ type WorkerPool interface {
 	Len() int
 }
 
+func NewWorkerPool() *workerPool {
+	return &workerPool{}
+}
+
 type workerPool struct {
 	mu   sync.RWMutex
 	pool []Worker
