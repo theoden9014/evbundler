@@ -48,12 +48,10 @@ func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan event.Event)
 		}()
 	}
 
-	select {
-	case <-ctx.Done():
-		// wait for worker graceful shutdown
-		wg.Wait()
-		return ctx.Err()
-	}
+	<-ctx.Done()
+	// wait for worker graceful shutdown
+	wg.Wait()
+	return ctx.Err()
 }
 
 func (d *ChannelDispatcher) serveWorker(ctx context.Context, w evbundler.Worker, evCh chan event.Event) {
