@@ -46,6 +46,7 @@ func (d *ChannelDispatcher) startWorkers(ctx context.Context, evCh chan event.Ev
 	for w := d.pool.Get(); w != nil; w = d.pool.Get() {
 		w := w
 		go func() {
+			defer w.Close()
 			for {
 				select {
 				case ev := <-evCh:
@@ -53,7 +54,6 @@ func (d *ChannelDispatcher) startWorkers(ctx context.Context, evCh chan event.Ev
 						ctx, task := trace.NewTask(ctx, "worker")
 						defer task.End()
 						if ev == nil { // close Event channel
-							w.Close()
 							return
 						}
 						r := w.Process(ctx, ev)
@@ -64,9 +64,7 @@ func (d *ChannelDispatcher) startWorkers(ctx context.Context, evCh chan event.Ev
 					}()
 
 				case <-ctx.Done():
-					w.Close()
 					return
-
 				}
 			}
 		}()
