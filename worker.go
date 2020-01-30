@@ -132,7 +132,7 @@ func (w *worker) Process(ctx context.Context, ev event.Event) *Result {
 
 	return &Result{
 		Weight:    weight,
-		WorkerID:  w.id,
+		EventName: w.id,
 		Error:     err,
 		Latency:   elapsed,
 		Timestamp: start,
