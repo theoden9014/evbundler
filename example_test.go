@@ -51,7 +51,7 @@ func ExampleHTTPEvent() {
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 	// generate http events with random path.
-	evCh := evbundler.TickerTrigger(ctx, 1*time.Millisecond, func(t time.Time, evCh chan evbundler.Event) {
+	evCh := evbundler.TickerProducer(ctx, 1*time.Millisecond, func(t time.Time, evCh chan evbundler.Event) {
 		var sb strings.Builder
 		r := rand.New(rand.NewSource(t.UnixNano()))
 		for i := 0; i < 10; i++ {
