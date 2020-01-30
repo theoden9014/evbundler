@@ -21,7 +21,7 @@ func TestTickerEventGenerator(t *testing.T) {
 	defer cancel()
 
 	var fooErr = errors.New("foo")
-	evch := event.TickerTrigeger(ctx, 1*time.Millisecond, func(t time.Time, evch chan event.Event) {
+	evch := event.TickerTrigger(ctx, 1*time.Millisecond, func(t time.Time, evch chan event.Event) {
 		evch <- &errEvent{err: fooErr}
 	})
 

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-loadtest/evbundler/event"
-	"golang.org/x/time/rate"
 )
 
 type Worker interface {
@@ -16,20 +15,15 @@ type Worker interface {
 	// StateTransaction(<-chan WorkerState)
 }
 
+type WorkerFunc func(context.Context, event.Event) error
+
+func defaultWorkerFunc(ctx context.Context, ev event.Event) error {
+	return ev.Fire(ctx)
+}
+
 type worker struct {
 	state WorkerState
 	f     WorkerFunc
-	limit *rate.Limiter
-	r     <-chan event.Event
-}
-
-func (w *worker) Wait(ctx context.Context) event.Event {
-	w.setState(StateWaiting)
-	defer w.setState(StateActive)
-	_ = w.limit.Wait(ctx)
-	ev := <-w.r
-
-	return ev
 }
 
 func (w *worker) Process(ctx context.Context, ev event.Event) *Result {
@@ -38,11 +32,11 @@ func (w *worker) Process(ctx context.Context, ev event.Event) *Result {
 	defer trace.StartRegion(ctx, fmt.Sprintf("process event: %q", ev.Name())).End()
 
 	start := time.Now()
-	weight, err := w.f(ctx, ev)
+	err := w.f(ctx, ev)
 	elapsed := time.Now().Sub(start)
 
 	return &Result{
-		Weight:    weight,
+		Weight:    1,
 		EventName: ev.Name(),
 		Error:     err,
 		Latency:   elapsed,
@@ -50,7 +44,9 @@ func (w *worker) Process(ctx context.Context, ev event.Event) *Result {
 	}
 }
 
-type WorkerFunc func(context.Context, event.Event) (int, error)
+func (w worker) Close() error {
+	return nil
+}
 
 type WorkerState int
 

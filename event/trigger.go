@@ -14,7 +14,7 @@ type tickerTrigger struct {
 	sendEventFunc func(time.Time, chan Event)
 }
 
-func TickerTrigeger(ctx context.Context, d time.Duration, f func(time.Time, chan Event)) chan Event {
+func TickerTrigger(ctx context.Context, d time.Duration, f func(time.Time, chan Event)) chan Event {
 	g := tickerTrigger{
 		ticker:        time.NewTicker(d),
 		sendEventFunc: f,
