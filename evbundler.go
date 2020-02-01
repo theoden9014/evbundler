@@ -5,13 +5,17 @@ import (
 	"sync"
 )
 
-type Dispatcher interface {
-	Dispatch(context.Context, chan Event) error
-}
-
 type Event interface {
 	Name() string
 	Fire(ctx context.Context) error
+}
+
+type Producer interface {
+	Produce(ctx context.Context) chan Event
+}
+
+type Dispatcher interface {
+	Dispatch(context.Context, chan Event) error
 }
 
 // EventBundler put several receive channels to gather into one.

@@ -5,10 +5,6 @@ import (
 	"time"
 )
 
-type Producer interface {
-	Produce(ctx context.Context) chan Event
-}
-
 type tickerProducer struct {
 	ticker        *time.Ticker
 	sendEventFunc func(time.Time, chan Event)
