@@ -7,13 +7,13 @@ import (
 	"github.com/go-loadtest/evbundler"
 )
 
-type RoundRobinDispatcher struct {
+type RoundRobin struct {
 	pool     evbundler.WorkerPool
 	resultCh chan *evbundler.Result
 	metrics  *evbundler.Metrics
 }
 
-func (d *RoundRobinDispatcher) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
+func (d *RoundRobin) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
 	go d.receiveResult(ctx)
 	for {
 		select {
@@ -25,7 +25,7 @@ func (d *RoundRobinDispatcher) Dispatch(ctx context.Context, evCh chan evbundler
 	}
 }
 
-func (d *RoundRobinDispatcher) dispatch(ctx context.Context, ev evbundler.Event) error {
+func (d *RoundRobin) dispatch(ctx context.Context, ev evbundler.Event) error {
 	w := d.pool.Get()
 	defer d.pool.Put(w)
 
@@ -45,7 +45,7 @@ func (d *RoundRobinDispatcher) dispatch(ctx context.Context, ev evbundler.Event)
 	return nil
 }
 
-func (d *RoundRobinDispatcher) receiveResult(ctx context.Context) {
+func (d *RoundRobin) receiveResult(ctx context.Context) {
 	for {
 		select {
 		case r := <-d.resultCh:

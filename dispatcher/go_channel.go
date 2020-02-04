@@ -9,16 +9,16 @@ import (
 	"github.com/go-loadtest/evbundler"
 )
 
-// ChannelDispatcher dispatcher by go channel.
-type ChannelDispatcher struct {
+// GoChannel dispatcher by go channel.
+type GoChannel struct {
 	pool     evbundler.WorkerPool
 	resultCh chan *evbundler.Result
 	metrics  *evbundler.Metrics
 }
 
-// NewChannelDispatcher initialize ChannelDispatcher.
-func NewChannelDispatcher(pool evbundler.WorkerPool) *ChannelDispatcher {
-	d := &ChannelDispatcher{
+// NewGoChannel initialize GoChannel.
+func NewGoChannel(pool evbundler.WorkerPool) *GoChannel {
+	d := &GoChannel{
 		pool:     pool,
 		resultCh: make(chan *evbundler.Result, pool.Len()),
 		metrics:  &evbundler.Metrics{},
@@ -27,12 +27,12 @@ func NewChannelDispatcher(pool evbundler.WorkerPool) *ChannelDispatcher {
 }
 
 // Dispatch dispatches events from a event channel.
-func (d *ChannelDispatcher) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
+func (d *GoChannel) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
 	go d.receiveResult(ctx)
 	return d.dispatch(ctx, evCh)
 }
 
-func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan evbundler.Event) error {
+func (d *GoChannel) dispatch(ctx context.Context, evCh chan evbundler.Event) error {
 	if d.pool.Len() == 0 {
 		return errors.New("count of workers > 0 in worker pool")
 	}
@@ -53,7 +53,7 @@ func (d *ChannelDispatcher) dispatch(ctx context.Context, evCh chan evbundler.Ev
 	return ctx.Err()
 }
 
-func (d *ChannelDispatcher) serveWorker(ctx context.Context, w evbundler.Worker, evCh chan evbundler.Event) {
+func (d *GoChannel) serveWorker(ctx context.Context, w evbundler.Worker, evCh chan evbundler.Event) {
 	defer w.Close()
 	for {
 		select {
@@ -77,7 +77,7 @@ func (d *ChannelDispatcher) serveWorker(ctx context.Context, w evbundler.Worker,
 	}
 }
 
-func (d *ChannelDispatcher) receiveResult(ctx context.Context) {
+func (d *GoChannel) receiveResult(ctx context.Context) {
 	for {
 		select {
 		case r := <-d.resultCh:
