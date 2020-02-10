@@ -16,7 +16,7 @@ import (
 	"github.com/go-loadtest/evbundler/event"
 )
 
-func ExampleHTTPEvent() {
+func ExampleTickerProducer() {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	countupCh := make(chan int, 10)
