@@ -7,7 +7,7 @@ import (
 	"github.com/influxdata/tdigest"
 )
 
-type Metrics struct {
+type metrics struct {
 	Latencies LatencyMetrics `json:"latencies"`
 	Earliest  time.Time      `json:"-"`
 	Latest    time.Time      `json:"-"`
@@ -23,7 +23,7 @@ type Metrics struct {
 	Duration   time.Duration `json:"duration"`
 }
 
-func (m *Metrics) Add(r *Result) {
+func (m *metrics) Add(r *Result) {
 	m.init()
 
 	m.Latencies.Add(r.Latency)
@@ -50,7 +50,7 @@ func (m *Metrics) Add(r *Result) {
 	}
 }
 
-func (m *Metrics) Export() Metrics {
+func (m *metrics) Export() metrics {
 	m2 := *m
 	m2.init()
 
@@ -72,7 +72,11 @@ func (m *Metrics) Export() Metrics {
 	return m2
 }
 
-func (m *Metrics) init() {
+func (m *metrics) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m)
+}
+
+func (m *metrics) init() {
 	if m.Errors == nil {
 		m.Errors = make(map[string]uint64)
 	}

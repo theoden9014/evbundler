@@ -18,6 +18,11 @@ type Dispatcher interface {
 	Dispatch(context.Context, chan Event) error
 }
 
+type Metrics interface {
+	Export() interface{}
+	MarshalJSON() ([]byte, error)
+}
+
 // EventBundler put several receive channels to gather into one.
 type EventBundler struct {
 	mu     sync.RWMutex
