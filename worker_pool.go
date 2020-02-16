@@ -4,12 +4,6 @@ import (
 	"sync"
 )
 
-type WorkerPool interface {
-	Get() Worker
-	Put(Worker)
-	Len() int
-}
-
 func NewWorkerPool(n int, f WorkerFunc) *workerPool {
 	wp := &workerPool{}
 	if f == nil {

@@ -18,6 +18,12 @@ type Dispatcher interface {
 	Dispatch(context.Context, chan Event) error
 }
 
+type WorkerPool interface {
+	Get() Worker
+	Put(Worker)
+	Len() int
+}
+
 type Metrics interface {
 	Export() interface{}
 	MarshalJSON() ([]byte, error)
