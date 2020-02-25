@@ -21,7 +21,7 @@ func NewGoChannel(pool evbundler.WorkerPool) *GoChannel {
 	d := &GoChannel{
 		pool:     pool,
 		resultCh: make(chan *evbundler.Result, pool.Len()),
-		metrics:  &evbundler.Metrics{},
+		metrics:  evbundler.NewMetrics(),
 	}
 	return d
 }
