@@ -13,7 +13,7 @@ import (
 type GoChannel struct {
 	pool     evbundler.WorkerPool
 	resultCh chan *evbundler.Result
-	metrics  *evbundler.Metrics
+	metrics  evbundler.Metrics
 }
 
 // NewGoChannel initialize GoChannel.
