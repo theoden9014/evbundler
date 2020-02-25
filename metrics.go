@@ -7,6 +7,10 @@ import (
 	"github.com/influxdata/tdigest"
 )
 
+func NewMetrics() *metrics {
+	return &metrics{}
+}
+
 type metrics struct {
 	Latencies LatencyMetrics `json:"latencies"`
 	Earliest  time.Time      `json:"-"`

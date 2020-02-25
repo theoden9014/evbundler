@@ -10,7 +10,7 @@ import (
 type RoundRobin struct {
 	pool     evbundler.WorkerPool
 	resultCh chan *evbundler.Result
-	metrics  *evbundler.Metrics
+	metrics  evbundler.Metrics
 }
 
 func (d *RoundRobin) Dispatch(ctx context.Context, evCh chan evbundler.Event) error {
