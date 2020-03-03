@@ -25,7 +25,7 @@ type WorkerPool interface {
 }
 
 type Metrics interface {
-	Export() interface{}
+	Add(*Result)
 	MarshalJSON() ([]byte, error)
 }
 
