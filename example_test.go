@@ -68,7 +68,9 @@ func ExampleTickerProducer() {
 
 	wp := evbundler.NewWorkerPool(10, nil)
 	disp := dispatcher.NewGoChannel(wp)
-	disp.Dispatch(ctx, evCh)
+	if err := disp.Dispatch(ctx, evCh); err != nil {
+		log.Fatal(err)
+	}
 
 	// Output: receive 100 requests
 }
