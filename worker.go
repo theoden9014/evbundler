@@ -31,7 +31,7 @@ func (w *worker) Process(ctx context.Context, ev Event) *Result {
 
 	start := time.Now()
 	err := w.f(ctx, ev)
-	elapsed := time.Now().Sub(start)
+	elapsed := time.Since(start)
 
 	return &Result{
 		Weight:    1,
