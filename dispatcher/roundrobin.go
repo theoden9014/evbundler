@@ -37,9 +37,7 @@ func (d *RoundRobin) dispatch(ctx context.Context, ev evbundler.Event) error {
 
 	r := w.Process(ctx, ev)
 	d.resultCh <- r
-
 	region := trace.StartRegion(ctx, "send result")
-	d.resultCh <- r
 	region.End()
 
 	return nil
