@@ -18,7 +18,6 @@ import (
 
 func ExampleTickerProducer() {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
 	countupCh := make(chan int, 10)
 	go func() {
 		var counter int
@@ -68,9 +67,7 @@ func ExampleTickerProducer() {
 
 	wp := evbundler.NewWorkerPool(10, nil)
 	disp := dispatcher.NewGoChannel(wp)
-	if err := disp.Dispatch(ctx, evCh); err != nil {
-		log.Fatal(err)
-	}
+	_ = disp.Dispatch(ctx, evCh)
 
 	// Output: receive 100 requests
 }
