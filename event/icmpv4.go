@@ -23,7 +23,7 @@ func NewICMPv4Event(seq int, listenAddr, addr string) *ICMPv4Event {
 }
 
 func (e ICMPv4Event) Name() string {
-	return "ICMPv4"
+	return "ping"
 }
 
 func (e ICMPv4Event) Fire(ctx context.Context) error {

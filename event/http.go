@@ -25,7 +25,7 @@ type HTTPEvent struct {
 
 // Name is Event name each event types
 func (he HTTPEvent) Name() string {
-	return "HTTP"
+	return "http"
 }
 
 // Fire execute a Event by parameters
