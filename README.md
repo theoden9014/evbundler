@@ -5,3 +5,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 evundler is a performance testing framework written in Go.
+
+
+## Installation
+```
+go get -u github.com/github.com/go-loadtest/evbundler/cmd/evbundler
+```
+
+## Usage
+`t.b.d`
