@@ -1,13 +1,20 @@
 package base
 
-import "flag"
+import (
+	"flag"
+	"fmt"
+	"os"
+)
 
 type Command struct {
 	Name  string
 	Doc   string
 	Run   func(args []string) error
-	Flags *flag.FlagSet
+	Flags flag.FlagSet
 }
 
-// Commands is register subcommands
-var Commands []*Command
+func (c *Command) Usage() {
+	fmt.Fprintf(os.Stderr, "Usage of %s\n\n", c.Name)
+	c.Flags.PrintDefaults()
+	os.Exit(2)
+}

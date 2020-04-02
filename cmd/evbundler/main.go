@@ -14,6 +14,7 @@ type Commands []*base.Command
 func (cs Commands) Usage() {
 	usage := `
 Usage of evbundler:
+
 		evbundler <command> [arguments]
 
 The commands are:
@@ -40,7 +41,9 @@ func main() {
 
 	for _, c := range commands {
 		if c.Name == args[0] {
-			c.Run(args[1:])
+			c.Flags.Usage = c.Usage
+			c.Flags.Parse(args[1:])
+			c.Run(c.Flags.Args())
 		}
 	}
 }
