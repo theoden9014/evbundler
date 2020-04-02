@@ -42,8 +42,8 @@ func main() {
 	for _, c := range commands {
 		if c.Name == args[0] {
 			c.Flags.Usage = c.Usage
-			c.Flags.Parse(args[1:])
-			c.Run(c.Flags.Args())
+			_ = c.Flags.Parse(args[1:])
+			_ = c.Run(c.Flags.Args())
 		}
 	}
 }
