@@ -3,7 +3,7 @@ GOOS		?= $(shell uname | tr A-Z a-z)
 GO		?= GOOS=$(GOOS) GOARCH=$(GOARCH) go
 
 PKGS		:= $(shell go list -f '{{.Dir}}' ./...)
-SOURCES     	:= $(foreach dir, $(PKGS), $(wildcard $(dir)/*.go))
+SOURCES	:= $(foreach dir, $(PKGS), $(wildcard $(dir)/*.go))
 
 .DEFAULT_GOAL := build
 
