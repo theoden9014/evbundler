@@ -21,7 +21,7 @@ func TestTickerProducer(t *testing.T) {
 	defer cancel()
 
 	var fooErr = errors.New("foo")
-	evch := evbundler.TickerProducer(ctx, 1*time.Millisecond, func(t time.Time, evch chan evbundler.Event) {
+	evch := evbundler.TickerProducer(ctx, 1*time.Millisecond, func(t time.Time, evch chan<- evbundler.Event) {
 		evch <- &errEvent{err: fooErr}
 	})
 

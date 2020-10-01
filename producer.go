@@ -7,10 +7,10 @@ import (
 
 type tickerProducer struct {
 	ticker        *time.Ticker
-	sendEventFunc func(time.Time, chan Event)
+	sendEventFunc func(time.Time, chan<- Event)
 }
 
-func TickerProducer(ctx context.Context, d time.Duration, f func(time.Time, chan Event)) chan Event {
+func TickerProducer(ctx context.Context, d time.Duration, f func(time.Time, chan<- Event)) chan Event {
 	p := tickerProducer{
 		ticker:        time.NewTicker(d),
 		sendEventFunc: f,
