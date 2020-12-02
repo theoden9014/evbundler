@@ -1,6 +1,6 @@
-module github.com/go-loadtest/evbundler
+module github.com/theoden9014/evbundler
 
-go 1.14
+go 1.15
 
 require (
 	github.com/influxdata/tdigest v0.0.1

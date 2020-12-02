@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-loadtest/evbundler"
+	"github.com/theoden9014/evbundler"
 )
 
 type errEvent struct {

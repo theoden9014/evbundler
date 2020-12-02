@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-loadtest/evbundler/event"
+	"github.com/theoden9014/evbundler/event"
 )
 
 func TestHTTPRequestEvent_Fire(t *testing.T) {

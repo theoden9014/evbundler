@@ -6,7 +6,7 @@ import (
 	"runtime/trace"
 	"sync"
 
-	"github.com/go-loadtest/evbundler"
+	"github.com/theoden9014/evbundler"
 )
 
 // GoChannel dispatcher by go channel.
