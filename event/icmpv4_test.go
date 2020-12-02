@@ -7,7 +7,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-loadtest/evbundler/event"
+	"github.com/theoden9014/evbundler/event"
 )
 
 func TestICMPv4_Fire(t *testing.T) {

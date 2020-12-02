@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-loadtest/evbundler"
-	"github.com/go-loadtest/evbundler/dispatcher"
-	"github.com/go-loadtest/evbundler/event"
+	"github.com/theoden9014/evbundler"
+	"github.com/theoden9014/evbundler/dispatcher"
+	"github.com/theoden9014/evbundler/event"
 )
 
 func ExampleTickerProducer() {

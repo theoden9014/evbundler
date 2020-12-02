@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime/trace"
 
-	"github.com/go-loadtest/evbundler"
+	"github.com/theoden9014/evbundler"
 )
 
 type RoundRobin struct {
