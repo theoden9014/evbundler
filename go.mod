@@ -1,6 +1,6 @@
 module github.com/theoden9014/evbundler
 
-go 1.16
+go 1.18
 
 require (
 	github.com/influxdata/tdigest v0.0.1
